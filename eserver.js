@@ -20,11 +20,13 @@ app.get(route, function(req, res) {
   res.send('Use POST method.');
 });
 
+const mongoConnection = mongoClient
+  .connectAsync(process.env.MONGO_URL + config.mongoDB);
+
 app.post(route, function(req, res) {
   console.log(req.body);
 
-  mongoClient
-    .connectAsync(process.env.MONGO_URL + config.mongoDB)
+  mongoConnection
     .then((db) => {
       return db.collection(`${req.params.param}-${date}`);
     })
