@@ -21,7 +21,14 @@ app.get(route, function(req, res) {
 });
 
 const mongoConnection = mongoClient
-  .connectAsync(process.env.MONGO_URL + config.mongoDB);
+  .connectAsync(config.mongoUrl);
+
+mongoConnection
+  .then(() => {
+    app.listen(config.port, function() {
+      console.log('Example app listening on port %s!', config.port);
+    });
+  });
 
 app.post(route, function(req, res) {
   console.log(req.body);
@@ -31,15 +38,19 @@ app.post(route, function(req, res) {
       return db.collection(`${req.params.param}-${date}`);
     })
     .then((col) => {
-      hash.update(req.body['user-mac']);
-      return col.insert({
-        'user-mac': hash.digest('hex'),
-        'local-timestamp-sec': req.body['local-timestamp-sec'],
-        'avg': req.body.sum / req.body.count,
-        'min': req.body.min,
-        'max': req.body.max,
-        'is-ap': !!+req.body['is-ap'],
-      });
+      let serverTimestamp = (new Date).getTime() / 1000;
+      for(let i = 0; i < req.body.length; i++) {
+        hash.update(req.body[i]['user-mac']);
+        col.insert({
+          'user-mac': hash.digest('hex'),
+          'local-timestamp-sec': req.body[i]['local-timestamp-sec'],
+          'server-timestamp-sec': serverTimestamp,
+          'avg': req.body[i].sum / req.body[i].count,
+          'min': req.body[i].min,
+          'max': req.body[i].max,
+          'is-ap': !!+req.body[i]['is-ap'],
+        });
+      }
     })
     .then(() => {
       let responseStatus = 'Ok';
@@ -50,8 +61,4 @@ app.post(route, function(req, res) {
       console.error(err);
       res.send(err);
     });
-});
-
-app.listen(config.port, function() {
-  console.log('Example app listening on port %s!', config.port);
 });

@@ -3,5 +3,5 @@
 module.exports = {
   'routePart': '/foo/bar/',
   'port': 8080,
-  'mongoDB': 'packages',
+  'mongoUrl': `${process.env.MONGO_URL}packages`
 };
