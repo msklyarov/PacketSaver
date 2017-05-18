@@ -38,19 +38,22 @@ app.post(route, function(req, res) {
       return db.collection(`${req.params.param}-${date}`);
     })
     .then((col) => {
+      let bulk = col.initializeUnorderedBulkOp();
       let serverTimestamp = (new Date).getTime() / 1000;
-      for(let i = 0; i < req.body.length; i++) {
-        hash.update(req.body[i]['user-mac']);
-        col.insert({
+
+      req.body.forEach(function(item) {
+        hash.update(item['user-mac']);
+        bulk.insert({
           'user-mac': hash.digest('hex'),
-          'local-timestamp-sec': req.body[i]['local-timestamp-sec'],
+          'local-timestamp-sec': item['local-timestamp-sec'],
           'server-timestamp-sec': serverTimestamp,
-          'avg': req.body[i].sum / req.body[i].count,
-          'min': req.body[i].min,
-          'max': req.body[i].max,
-          'is-ap': !!+req.body[i]['is-ap'],
+          'avg': item.sum / item.count,
+          'min': item.min,
+          'max': item.max,
+          'is-ap': !!+item['is-ap'],
         });
-      }
+      });
+      bulk.execute();
     })
     .then(() => {
       let responseStatus = 'Ok';
