@@ -38,7 +38,7 @@ app.post(route, function(req, res) {
       let bulk = col.initializeUnorderedBulkOp();
       let serverTimestamp = (new Date).getTime() / 1000;
 
-      let isOneRecordInserted = false;
+      let isRecordInserted = false;
       req.body.forEach(function(item) {
         if (dateFormat(
           new Date(item['local-timestamp']), dateFormatTemplate) ===
@@ -60,10 +60,10 @@ app.post(route, function(req, res) {
           'is-ap': !!+item['is-ap'],
         });
 
-        isOneRecordInserted = true;
+        isRecordInserted = true;
       });
 
-      if (isOneRecordInserted) {
+      if (isRecordInserted) {
         bulk.execute()
           .then(() => {
             console.log('Ok');
