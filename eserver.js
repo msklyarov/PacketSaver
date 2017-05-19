@@ -35,48 +35,48 @@ app.post(route, function(req, res) {
   console.log(req.body);
 
   const col = getCollection(req.params.param);
-      let bulk = col.initializeUnorderedBulkOp();
-      let serverTimestamp = (new Date).getTime() / 1000;
+  let bulk = col.initializeUnorderedBulkOp();
+  let serverTimestamp = (new Date).getTime() / 1000;
 
-      let isRecordInserted = false;
-      req.body.forEach(function(item) {
-        if (dateFormat(
-          new Date(item['local-timestamp']), dateFormatTemplate) ===
-            '1970-01-01') {
-          return;
-        }
+  let isRecordInserted = false;
+  req.body.forEach(function(item) {
+    if (dateFormat(
+      new Date(item['local-timestamp']), dateFormatTemplate) ===
+        '1970-01-01') {
+      return;
+    }
 
-        bulk.insert({
-          'user-mac': crypto
-            .createHash('sha256')
-            .update(item['user-mac'])
-            .update(config.salt)
-            .digest('hex'),
-          'local-timestamp-sec': item['local-timestamp-sec'],
-          'server-timestamp-sec': serverTimestamp,
-          'avg': item.sum / item.count,
-          'min': item.min,
-          'max': item.max,
-          'is-ap': !!+item['is-ap'],
-        });
+    bulk.insert({
+      'user-mac': crypto
+        .createHash('sha256')
+        .update(item['user-mac'])
+        .update(config.salt)
+        .digest('hex'),
+      'local-timestamp-sec': item['local-timestamp-sec'],
+      'server-timestamp-sec': serverTimestamp,
+      'avg': item.sum / item.count,
+      'min': item.min,
+      'max': item.max,
+      'is-ap': !!+item['is-ap'],
+    });
 
-        isRecordInserted = true;
-      });
+    isRecordInserted = true;
+  });
 
-      if (isRecordInserted) {
-        bulk.execute()
-          .then(() => {
-            console.log('Ok');
-            res.sendStatus(200);
-          })
-          .catch((err) => {
-            console.error(err);
-            res.sendStatus(500);
-          });
-      } else {
+  if (isRecordInserted) {
+    bulk.execute()
+      .then(() => {
         console.log('Ok');
         res.sendStatus(200);
-      }
+      })
+      .catch((err) => {
+        console.error(err);
+        res.sendStatus(500);
+      });
+  } else {
+    console.log('Ok');
+    res.sendStatus(200);
+  }
 });
 
 const collections = {};
