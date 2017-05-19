@@ -86,7 +86,7 @@ const collections = {};
  * @param {string} param The string key.
  * @return {object} The collection item.
  */
-function getCollection(param) {
+const getCollection = (param) => {
   const date = dateFormat(new Date(), dateFormatTemplate);
   console.log('Param: %s, Collection name: %s, date: %s',
     param, config.collectionName, date);
@@ -99,4 +99,4 @@ function getCollection(param) {
 
   collections[collectionKey] = mongoDb.collection(collectionKey);
   return collections[collectionKey];
-}
+};
