@@ -1,5 +1,3 @@
-'use strict';
-
 const crypto = require('crypto');
 const dateFormat = require('dateformat');
 const app = require('express')();
