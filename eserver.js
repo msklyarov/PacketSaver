@@ -38,6 +38,7 @@ app.post(route, function(req, res) {
       let bulk = col.initializeUnorderedBulkOp();
       let serverTimestamp = (new Date).getTime() / 1000;
 
+      let isOneRecordInserted = false;
       req.body.forEach(function(item) {
         if (dateFormat(
           new Date(item['local-timestamp']), dateFormatTemplate) ===
@@ -58,17 +59,24 @@ app.post(route, function(req, res) {
           'max': item.max,
           'is-ap': !!+item['is-ap'],
         });
+
+        isOneRecordInserted = true;
       });
 
-      bulk.execute()
-        .then(() => {
-          console.log('Ok');
-          res.sendStatus(200);
-      })
-      .catch((err) => {
-          console.error(err);
-          res.send(err);
-      });
+      if (isOneRecordInserted) {
+        bulk.execute()
+          .then(() => {
+            console.log('Ok');
+            res.sendStatus(200);
+          })
+          .catch((err) => {
+            console.error(err);
+            res.sendStatus(500);
+          });
+      } else {
+        console.log('Ok');
+        res.sendStatus(200);
+      }
 });
 
 const collections = {};
