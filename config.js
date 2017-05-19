@@ -5,5 +5,5 @@ module.exports = {
   'port': 8080,
   'mongoUrl': `${process.env.MONGO_URL}packages`,
   'collectionName': 'NewCollection',
-  'salt': 'sd23SDF2sz12_$%'
+  'salt': 'sd23SDF2sz12_$%',
 };

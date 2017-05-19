@@ -7,8 +7,8 @@ const bodyParser = require('body-parser');
 const Promise = require('bluebird');
 const mongoClient = Promise.promisifyAll(require('mongodb').MongoClient);
 const config = require('./config');
-const dateFormatTemplate = 'yyyy-mm-dd';
 
+const dateFormatTemplate = 'yyyy-mm-dd';
 const route = `/api/:version${config.routePart}:param`;
 
 console.log('Listening route: \'%s\' at port: %d', route, config.port);
