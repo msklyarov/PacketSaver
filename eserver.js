@@ -41,7 +41,7 @@ app.post(route, function(req, res) {
           new Date(item['local-timestamp']), 'yyyy-mm-dd') ===
             '1970-01-01') {
           return;
-        };
+        }
 
         bulk.insert({
           'user-mac': crypto
