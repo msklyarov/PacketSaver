@@ -19,7 +19,8 @@ app.get(route, function(req, res) {
   res.send('Use POST method.');
 });
 
-let mongoDb = mongoClient
+let mongoDb;
+mongoClient
   .connectAsync(config.mongoUrl)
   .then((db) => {
     mongoDb = db;
