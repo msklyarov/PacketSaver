@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const Promise = require('bluebird');
 const mongoClient = Promise.promisifyAll(require('mongodb').MongoClient);
 const config = require('./config');
+const dateFormatTemplate = 'yyyy-mm-dd';
 
 const route = `/api/:version${config.routePart}:param`;
 
@@ -38,7 +39,7 @@ app.post(route, function(req, res) {
 
       req.body.forEach(function(item) {
         if (dateFormat(
-          new Date(item['local-timestamp']), 'yyyy-mm-dd') ===
+          new Date(item['local-timestamp']), dateFormatTemplate) ===
             '1970-01-01') {
           return;
         }
@@ -77,7 +78,7 @@ const collections = {};
  * @return {object} The collection item.
  */
 function getCollection(param) {
-  const date = dateFormat(new Date(), 'yyyy-mm-dd');
+  const date = dateFormat(new Date(), dateFormatTemplate);
   console.log('Param: %s, Collection name: %s, date: %s',
     param, config.collectionName, date);
   const collectionKey = `${param}_${config.collectionName}_${date}`;
