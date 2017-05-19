@@ -1,6 +1,6 @@
 'use strict';
 
-const hash = require('crypto').createHash('sha256');
+const crypto = require('crypto');
 const dateFormat = require('dateformat');
 const app = require('express')();
 const bodyParser = require('body-parser');
@@ -8,11 +8,9 @@ const Promise = require('bluebird');
 const mongoClient = Promise.promisifyAll(require('mongodb').MongoClient);
 const config = require('./config');
 
-const date = dateFormat(new Date(), 'yyyy-mm-dd');
 const route = `/api/:version${config.routePart}:param`;
 
 console.log('Listening route: \'%s\' at port: %d', route, config.port);
-console.log('Date: %s', date);
 
 app.use(bodyParser.json());
 
@@ -20,10 +18,11 @@ app.get(route, function(req, res) {
   res.send('Use POST method.');
 });
 
-const mongoConnection = mongoClient
-  .connectAsync(config.mongoUrl);
-
-mongoConnection
+let mongoDb = mongoClient
+  .connectAsync(config.mongoUrl)
+  .then((db) => {
+    mongoDb = db;
+  })
   .then(() => {
     app.listen(config.port, function() {
       console.log('Example app listening on port %s!', config.port);
@@ -33,18 +32,23 @@ mongoConnection
 app.post(route, function(req, res) {
   console.log(req.body);
 
-  mongoConnection
-    .then((db) => {
-      return db.collection(`${req.params.param}-${date}`);
-    })
-    .then((col) => {
+  const col = getCollection(req.params.param);
       let bulk = col.initializeUnorderedBulkOp();
       let serverTimestamp = (new Date).getTime() / 1000;
 
       req.body.forEach(function(item) {
-        hash.update(item['user-mac']);
+        if (dateFormat(
+          new Date(item['local-timestamp']), 'yyyy-mm-dd') ===
+            '1970-01-01') {
+          return;
+        };
+
         bulk.insert({
-          'user-mac': hash.digest('hex'),
+          'user-mac': crypto
+            .createHash('sha256')
+            .update(item['user-mac'])
+            .update(config.salt)
+            .digest('hex'),
           'local-timestamp-sec': item['local-timestamp-sec'],
           'server-timestamp-sec': serverTimestamp,
           'avg': item.sum / item.count,
@@ -53,15 +57,36 @@ app.post(route, function(req, res) {
           'is-ap': !!+item['is-ap'],
         });
       });
-      bulk.execute();
-    })
-    .then(() => {
-      let responseStatus = 'Ok';
-      console.log(responseStatus);
-      res.send(responseStatus);
-    })
-    .catch((err) => {
-      console.error(err);
-      res.send(err);
-    });
+
+      bulk.execute()
+        .then(() => {
+          console.log('Ok');
+          res.sendStatus(200);
+      })
+      .catch((err) => {
+          console.error(err);
+          res.send(err);
+      });
 });
+
+const collections = {};
+
+/**
+ * Gets cached collection
+ * @param {string} param The string key.
+ * @return {object} The collection item.
+ */
+function getCollection(param) {
+  const date = dateFormat(new Date(), 'yyyy-mm-dd');
+  console.log('Param: %s, Collection name: %s, date: %s',
+    param, config.collectionName, date);
+  const collectionKey = `${param}_${config.collectionName}_${date}`;
+
+  const collection = collections[collectionKey];
+  if (collection) {
+    return collection;
+  }
+
+  collections[collectionKey] = mongoDb.collection(collectionKey);
+  return collections[collectionKey];
+}
