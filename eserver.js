@@ -33,6 +33,7 @@ app.post(route, function(req, res) {
   console.log(req.body);
 
   const col = getCollection(req.params.param);
+
   let bulk = col.initializeUnorderedBulkOp();
   let serverTimestamp = (new Date).getTime() / 1000;
 

@@ -10,11 +10,11 @@
   "author": "John Sumin",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.15.3",
-    "body-parser": "^1.17.2",
     "bluebird": "^3.5.0",
-    "mongodb": "^2.2.26",
+    "body-parser": "^1.17.2",
     "dateformat": "^2.0.0",
-    "eslint-config-google": "^0.7.1"
+    "eslint-config-airbnb": "^15.0.1",
+    "express": "^4.15.3",
+    "mongodb": "^2.2.27"
   }
 }

@@ -1,1 +1,2 @@
-SET MONGO_URL=mongodb://localhost:27017/
+SET MONGO_URL=mongodb://192.168.99.100:27017/packages
+SET COLLECTION_PARAM=param12
