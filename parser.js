@@ -48,14 +48,12 @@ mongoClient
           $out: outputCollectionKey,
         },
       ]
-    ).toArray(function(err) {
+    ).next(function(err) {
       if (err) {
         console.log(err);
       }
+      mongoDb.close();
     });
-  })
-  .then(() => {
-    mongoDb.close();
   })
   .catch((err) => {
     console.log(err);
